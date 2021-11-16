@@ -25,6 +25,22 @@ public class ThumbSelectorView: AVAssetTimeSelector {
             thumbView.layer.borderColor = thumbBorderColor.cgColor
         }
     }
+    
+    public var thumbBorderWidth: CGFloat = 2 {
+        didSet {
+            thumbView.layer.borderWidth = thumbBorderWidth
+            thumbView.layer.cornerRadius = 2
+        }
+    }
+    
+    public var dimmingColor: UIColor = UIColor.white.withAlphaComponent(0.7) {
+        didSet {
+            dimmingView.backgroundColor = dimmingColor
+            dimmingView.layer.borderWidth = 6
+            dimmingView.layer.borderColor = UIColor.darkText.cgColor
+            dimmingView.layer.cornerRadius = 2
+        }
+    }
 
     private let thumbView = UIImageView()
     private let dimmingView = UIView()
@@ -48,7 +64,7 @@ public class ThumbSelectorView: AVAssetTimeSelector {
 
         dimmingView.translatesAutoresizingMaskIntoConstraints = false
         dimmingView.isUserInteractionEnabled = false
-        dimmingView.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+        dimmingView.backgroundColor = dimmingColor
         addSubview(dimmingView)
         dimmingView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         dimmingView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
@@ -59,7 +75,7 @@ public class ThumbSelectorView: AVAssetTimeSelector {
     private func setupThumbView() {
 
         thumbView.translatesAutoresizingMaskIntoConstraints = false
-        thumbView.layer.borderWidth = 2.0
+        thumbView.layer.borderWidth = thumbBorderWidth
         thumbView.layer.borderColor = thumbBorderColor.cgColor
         thumbView.isUserInteractionEnabled = true
         thumbView.contentMode = .scaleAspectFill
@@ -74,6 +90,8 @@ public class ThumbSelectorView: AVAssetTimeSelector {
 
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(ThumbSelectorView.handlePanGesture(_:)))
         thumbView.addGestureRecognizer(panGestureRecognizer)
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ThumbSelectorView.handleTapGesture(_:)))
+        addGestureRecognizer(tapGestureRecognizer)
     }
 
     // MARK: - Gesture handling
@@ -98,10 +116,23 @@ public class ThumbSelectorView: AVAssetTimeSelector {
         default: break
         }
     }
+    
+    @objc func handleTapGesture(_ gestureRecognizer: UITapGestureRecognizer) {
+        let translation = gestureRecognizer.location(in: self)
+        updateOnTapThumbConstraint(with: translation)
+        layoutIfNeeded()
+        updateSelectedTime()
+    }
 
     private func updateThumbConstraint(with translation: CGPoint) {
         let maxConstraint = frame.width - thumbView.frame.width
         let newConstraint = min(max(0, currentThumbConstraint + translation.x), maxConstraint)
+        leftThumbConstraint?.constant = newConstraint
+    }
+    
+    private func updateOnTapThumbConstraint(with translation: CGPoint) {
+        let maxConstraint = frame.width - thumbView.frame.width
+        let newConstraint = min(max(0, translation.x), maxConstraint)
         leftThumbConstraint?.constant = newConstraint
     }
 
