@@ -37,7 +37,7 @@ public class ThumbSelectorView: AVAssetTimeSelector {
         didSet {
             dimmingView.backgroundColor = dimmingColor
             dimmingView.layer.borderWidth = 6
-            dimmingView.layer.borderColor = UIColor.darkText.cgColor
+            dimmingView.layer.borderColor = dimmingColor.cgColor
             dimmingView.layer.cornerRadius = 2
         }
     }
